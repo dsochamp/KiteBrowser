@@ -1,0 +1,27 @@
+@font-face {
+  font-family: 'AgrandirReg';
+  src: url('Agrandir\ Font/Agrandir-Regular.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; 
+}
+
+:root {
+  --borderradius: 50px;
+}
+
+body {
+    margin: 0;
+}
+
+#tabs {
+    height: 10vh;
+    background-color: rgb(48, 49, 52);
+    border-bottom-left-radius: var(--borderradius);
+    border-bottom-right-radius: var(--borderradius);
+    corner-shape: squircle;
+}
+
+#mainbrowser {
+    height: 90vh;
+}
