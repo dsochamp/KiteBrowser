@@ -2,14 +2,23 @@
 <html>
     <head>
         <link rel="stylesheet" href="style.css">
-        <script src="script.js"></script>
+        <script src="script.js" defer></script>
     </head>
     <body>
-        <div id="tabs">
-
-        </div>
-        <div id="mainbrowser">
-
+        <div class="browser-shell">
+            <div class="tab-row">
+                <div class="tab-bar" id="tabBar" aria-label="Open tabs"></div>
+                <button class="add-tab" id="addTabButton" type="button" aria-label="Add new tab">+</button>
+            </div>
+            <div id="mainbrowser">
+                <div id="searchbar">
+                    <img src="Images/back.png" alt="Back">
+                    <img src="Images/forward.png" alt="Forward">
+                    <img src="Images/refresh.png" alt="Refresh">
+                    <input type="text" id="search" placeholder="Search or type URL">
+                </div>
+                <div id="pagerender"></div>
+            </div>
         </div>
     </body>
 </html>

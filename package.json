@@ -1,0 +1,24 @@
+{
+  "name": "kitebrowser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsochamp/KiteBrowser.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dsochamp/KiteBrowser/issues"
+  },
+  "homepage": "https://github.com/dsochamp/KiteBrowser#readme",
+  "devDependencies": {
+    "electron": "^44.5.1"
+  }
+}
