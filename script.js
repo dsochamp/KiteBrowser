@@ -1,4 +1,4 @@
-const tabs = [{ title: 'Tab 1' }, { title: 'Tab 2' }, { title: 'Tab 3' }];
+const tabs = [{ title: 'Home' }];
 let activeTabIndex = 0;
 
 function renderTabs() {
@@ -74,3 +74,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderTabs();
 });
+
+const page = document.getElementById("pagerender");
+
+function updateWebViewSize() {
+  const rect = page.getBoundingClientRect();
+
+  window.electronAPI.setPageBounds({
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height
+  });
+}
+
+const observer = new ResizeObserver(updateWebViewSize);
+
+observer.observe(page);
+
+updateWebViewSize();
