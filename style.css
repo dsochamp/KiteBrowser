@@ -12,7 +12,7 @@
   --tab-active-bg: rgb(244, 244, 244);
   --tab-textcol: rgb(50, 49, 49);
   --tab-width: 100vw;
-  --iconsizing: 2vw;
+  --iconsizing: 2.5vw;
 }
 
 body {
@@ -34,7 +34,7 @@ body {
     display: flex;
     align-items: flex-end;
     gap: 2vw;
-    padding: 2vw 2vw 0;
+    padding: 2vh 2vw 0 8vw;
 }
 
 .tab-bar {
@@ -44,6 +44,10 @@ body {
     overflow-x: auto;
     white-space: nowrap;
     flex: 1;
+    scrollbar-width: 0;
+    &::-webkit-scrollbar {
+      display: none;
+    }
 }
 
 .tab {
@@ -52,6 +56,7 @@ body {
   justify-content: space-between;
   gap: 10px;
   width: var(--tab-width);
+  transition: var(--tab-width) 1s ease-in-out, width 2s ease-in-out;
   height: 6vh;
   padding: 0 1vw;
   background-color: var(--tab-bg);
@@ -59,7 +64,7 @@ body {
   border-radius: var(--borderradius);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: --tab-width 1s ease-in-out;
   margin: 0;
 }
 
@@ -79,10 +84,16 @@ body {
   flex-shrink: 0;
 }
 
-.tab-icon img,
-.tab-close img {
+.tab-icon img {
   width: var(--iconsizing);
   height: var(--iconsizing);
+  object-fit: contain;
+  border-radius: var(--borderradius);
+}
+
+.tab-close img {
+  width: calc(var(--iconsizing) - 0.5vw);
+  height: calc(var(--iconsizing) - 0.5vw);
   object-fit: contain;
   border-radius: var(--borderradius);
 }
@@ -106,7 +117,7 @@ body {
     height: 6vh;
     border: none;
     border-radius: 50%;
-    background: rgb(228, 228, 228);
+    background: none;
     color: rgb(40, 40, 40);
     font-size: 1.6rem;
     line-height: 1;
@@ -115,11 +126,24 @@ body {
     align-items: center;
     justify-content: center;
     margin-bottom: 3px;
+    margin: 0;
+    padding: 0;
 }
 
 .add-tab img {
-  width: 6vh;
-  height: 6vh;
+  width: 4vh;
+  height: 4vh;
+  background: none;
+}
+
+#back, #forward, #refresh {
+  background: none;
+  background-color: none;
+  border: none;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-items: center;
 }
 
 #mainbrowser {
@@ -128,6 +152,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    margin: 0;
 }
 
 #searchbar {
@@ -136,10 +161,11 @@ body {
     gap: 10px;
     height: 52px;
     margin: 0 18px;
-    padding: 0 14px;
+    padding: 0 14px 0;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.7);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1vh;
 }
 
 #searchbar img {
@@ -162,4 +188,6 @@ body {
   background: rgba(255, 255, 255, 0.7);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
   min-height: 0;
+  margin: 0;
+  padding: 0;
 }

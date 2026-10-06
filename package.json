@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/dsochamp/KiteBrowser#readme",
   "devDependencies": {
-    "electron": "^44.5.1"
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
   }
 }

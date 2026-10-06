@@ -1,4 +1,4 @@
-const tabs = [{ title: 'Home' }];
+const tabs = [{ title: 'Home' , domain: 'https://google.com'}];
 let activeTabIndex = 0;
 
 function renderTabs() {
@@ -55,6 +55,7 @@ function renderTabs() {
     tabEl.append(icon, label, close);
     tabBar.appendChild(tabEl);
   });
+
 }
 
 function addTab() {
@@ -64,7 +65,10 @@ function addTab() {
   renderTabs();
 }
 
-document.documentElement.style.setProperty('--tab-width', `${100 / tabs.length}vw`);
+
+tabWidth = 100 / tabs.length;
+
+document.documentElement.style.setProperty('--tab-width', `${tabWidth}vw`);
 
 document.addEventListener('DOMContentLoaded', () => {
   const addTabButton = document.getElementById('addTabButton');
@@ -93,3 +97,58 @@ const observer = new ResizeObserver(updateWebViewSize);
 observer.observe(page);
 
 updateWebViewSize();
+
+let recenttabs = ['https://google.com'];
+let currenttab = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const refreshButton = document.getElementById("refresh");
+  if (refreshButton) {
+    refreshButton.addEventListener('click', () => {
+      window.electronAPI.reloadPage();
+    })
+  }
+
+  renderTabs();
+});
+
+let searchBoxContent = document.getElementById('search');
+
+let searchQuery = searchBoxContent.value
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    if (document.activeElement === searchBoxContent) {
+      if (searchQuery.includes(' ')) {
+        searchQuery = 'https://google.com/search?q=' + searchQuery.replaceAll(' ', '+');
+        console.log(searchQuery)
+      } else if (searchQuery.includes('.') && !searchQuery.startsWith('https://') || !searchQuery.startsWith('http://') || !searchQuery.startsWith('localhost:')) {
+        searchQuery = 'https://' + searchQuery
+        console.log(searchQuery)
+      } else {
+        searchQuery = 'https://google.com/search?q=' + searchQuery
+        console.log(searchQuery)
+      }
+
+      window.electronAPI.searchDomain({
+        domain: searchBoxContent
+      });
+        
+      currenttab = searchQuery
+      recenttabs.push(searchQuery);
+    }
+  }
+});
+
+document.addEventListener('click', (event) => { 
+
+  let backbtn = document.getElementById('back')
+  backbtn.addEventListener('click', () => {
+    window.electronAPI.backPage({
+      domain: recenttabs[(recenttabs.indexOf(currenttab) - 1)]
+    });
+    searchBoxContent.value = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
+
+    currenttab = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
+  });
+});

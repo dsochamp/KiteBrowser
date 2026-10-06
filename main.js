@@ -12,6 +12,10 @@ function createWindow() {
         width: 1200,
         height: 800,
 
+        titleBarStyle: "hidden",
+
+        trafficLightPosition: { x: 20, y: 25 },
+
         webPreferences: {
             preload: __dirname + "/preload.js"
         }
@@ -22,7 +26,7 @@ function createWindow() {
 
     win.contentView.addChildView(webView);
 
-    webView.webContents.loadURL("https://supernova-rsvp.vercel.app");
+    webView.webContents.loadURL("https://google.com");
 }
 
 ipcMain.on("set-page-bounds", (event, bounds) => {
@@ -35,5 +39,23 @@ ipcMain.on("set-page-bounds", (event, bounds) => {
         height: Math.round(bounds.height)
     });
 });
+
+ipcMain.on("reload-page", () => {
+    if (webView && webView.webContents) {
+        webView.webContents.reload();
+    }
+});
+
+ipcMain.on("search-domain", (event, data) => {
+    if (webView && webView.webContents) {
+        webView.webContents.loadURL(data.domain);
+    }
+})
+
+ipcMain.on("forward-domain", (event, data) => {
+    if(webView && webView.webContents) {
+        webView.webContents.loadURL(data.domain);
+    }
+})
 
 app.whenReady().then(createWindow);
