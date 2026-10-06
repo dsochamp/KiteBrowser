@@ -44,6 +44,11 @@ function renderTabs() {
         activeTabIndex = tabs.length - 1;
       }
 
+      let tabWidth = 100 / tabs.length;
+
+      document.documentElement.style.setProperty('--tab-width', `${tabWidth}vw`);
+
+
       renderTabs();
     });
 
@@ -64,11 +69,6 @@ function addTab() {
   activeTabIndex = tabs.length - 1;
   renderTabs();
 }
-
-
-tabWidth = 100 / tabs.length;
-
-document.documentElement.style.setProperty('--tab-width', `${tabWidth}vw`);
 
 document.addEventListener('DOMContentLoaded', () => {
   const addTabButton = document.getElementById('addTabButton');
@@ -112,26 +112,27 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
 });
 
-let searchBoxContent = document.getElementById('search');
-
-let searchQuery = searchBoxContent.value
-
 document.addEventListener('keydown', (event) => {
+
+  let searchBoxContent = document.getElementById('search');
+
+  let searchQuery = searchBoxContent.value
+
   if (event.key === 'Enter') {
     if (document.activeElement === searchBoxContent) {
+
+      searchQuery = searchQuery.replaceAll('https://', '').replaceAll('http://', '').replaceAll('localhost:');
+
       if (searchQuery.includes(' ')) {
         searchQuery = 'https://google.com/search?q=' + searchQuery.replaceAll(' ', '+');
-        console.log(searchQuery)
-      } else if (searchQuery.includes('.') && !searchQuery.startsWith('https://') || !searchQuery.startsWith('http://') || !searchQuery.startsWith('localhost:')) {
-        searchQuery = 'https://' + searchQuery
-        console.log(searchQuery)
+      } else if ((!searchQuery.startsWith('https://') || !searchQuery.startsWith('http://') || !searchQuery.startsWith('localhost:')) && searchQuery.includes('.')) {
+        searchQuery = 'https://' + searchQuery;
       } else {
-        searchQuery = 'https://google.com/search?q=' + searchQuery
-        console.log(searchQuery)
+        searchQuery = 'https://google.com/search?q=' + searchQuery;
       }
 
       window.electronAPI.searchDomain({
-        domain: searchBoxContent
+        domain: searchQuery
       });
         
       currenttab = searchQuery
