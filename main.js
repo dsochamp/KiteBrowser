@@ -1,9 +1,11 @@
+const { create } = require("domain");
 const {
     app,
     BrowserWindow,
     WebContentsView,
     ipcMain
 } = require("electron");
+
 
 let webView;
 
@@ -15,7 +17,6 @@ function createWindow() {
         titleBarStyle: "hidden",
 
         trafficLightPosition: { x: 20, y: 25 },
-
         webPreferences: {
             preload: __dirname + "/preload.js"
         }

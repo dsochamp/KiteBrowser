@@ -12,11 +12,15 @@
   --tab-active-bg: rgb(244, 244, 244);
   --tab-textcol: rgb(50, 49, 49);
   --tab-width: 100vw;
-  --iconsizing: 2.5vw;
+  --iconsizing: 1.75vw;
+}
+
+html {
+  margin: none;
 }
 
 body {
-    margin: 0;
+    margin: none;
     background-color: rgb(247, 247, 247);
     font-family: 'AgrandirReg';
 }
@@ -24,6 +28,7 @@ body {
 * {
   font-family: 'AgrandirReg';
   corner-shape: squircle;
+  margin: 0;
 }
 
 .browser-shell {
@@ -54,7 +59,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 2vw;
   width: var(--tab-width);
   transition: var(--tab-width) 1s ease-in-out, width 2s ease-in-out;
   height: 6vh;
@@ -147,7 +152,6 @@ body {
 }
 
 #mainbrowser {
-    height: 90vh;
     padding-top: 8px;
     display: flex;
     flex-direction: column;
@@ -159,7 +163,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 52px;
+    height: 6vh;
     margin: 0 18px;
     padding: 0 14px 0;
     border-radius: 16px;
@@ -184,7 +188,7 @@ body {
 }
 
 #pagerender {
-  height: 80vh;
+  height: 120vh;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
   min-height: 0;

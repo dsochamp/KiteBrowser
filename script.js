@@ -1,3 +1,4 @@
+let landingpage = 'https://google.com';
 const tabs = [{ title: 'Home' , domain: 'https://google.com'}];
 let activeTabIndex = 0;
 
@@ -33,7 +34,7 @@ function renderTabs() {
       tabs.splice(index, 1);
 
       if (tabs.length === 0) {
-        tabs.push({ title: 'Tab 1' });
+        tabs.push({ title: 'Tab 1', domain: landingpage });
       }
 
       if (index <= activeTabIndex) {
@@ -54,18 +55,26 @@ function renderTabs() {
 
     tabEl.addEventListener('click', () => {
       activeTabIndex = index;
+      const searchBox = document.getElementById('search');
+      searchBox.value = tabs[activeTabIndex].domain;
+      window.electronAPI.searchDomain({
+        domain: tabs[index].domain
+      });
       renderTabs();
+
     });
 
     tabEl.append(icon, label, close);
     tabBar.appendChild(tabEl);
+
   });
 
 }
 
 function addTab() {
   const nextNumber = tabs.length + 1;
-  tabs.push({ title: `Tab ${nextNumber}` });
+  tabs.push({ title: `Tab ${nextNumber}`, domain: landingpage});
+  window.electronAPI.searchDomain({ domain: landingpage });
   activeTabIndex = tabs.length - 1;
   renderTabs();
 }
@@ -116,17 +125,16 @@ document.addEventListener('keydown', (event) => {
 
   let searchBoxContent = document.getElementById('search');
 
-  let searchQuery = searchBoxContent.value
-
   if (event.key === 'Enter') {
     if (document.activeElement === searchBoxContent) {
 
-      searchQuery = searchQuery.replaceAll('https://', '').replaceAll('http://', '').replaceAll('localhost:');
+      let searchQuery = searchBoxContent.value.replace('https://', '').replace('localhost:', '').trim();
 
       if (searchQuery.includes(' ')) {
         searchQuery = 'https://google.com/search?q=' + searchQuery.replaceAll(' ', '+');
       } else if ((!searchQuery.startsWith('https://') || !searchQuery.startsWith('http://') || !searchQuery.startsWith('localhost:')) && searchQuery.includes('.')) {
         searchQuery = 'https://' + searchQuery;
+        tabs[activeTabIndex].title = searchQuery.split('/')[2];
       } else {
         searchQuery = 'https://google.com/search?q=' + searchQuery;
       }
@@ -135,21 +143,21 @@ document.addEventListener('keydown', (event) => {
         domain: searchQuery
       });
         
-      currenttab = searchQuery
+      currenttab = searchQuery;
       recenttabs.push(searchQuery);
+
+      tabs[activeTabIndex].domain = searchQuery;
+      renderTabs();
     }
   }
 });
 
-document.addEventListener('click', (event) => { 
-
-  let backbtn = document.getElementById('back')
-  backbtn.addEventListener('click', () => {
-    window.electronAPI.backPage({
-      domain: recenttabs[(recenttabs.indexOf(currenttab) - 1)]
-    });
-    searchBoxContent.value = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
-
-    currenttab = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
+let backbtn = document.getElementById('back')
+backbtn.addEventListener('click', () => {
+  window.electronAPI.backPage({
+    domain: recenttabs[(recenttabs.indexOf(currenttab) - 1)]
   });
+  searchBoxContent.value = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
+
+  currenttab = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
 });
