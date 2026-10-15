@@ -1,4 +1,7 @@
 const { create } = require("domain");
+const fs = require("node:fs");
+const path = require("node:path");
+
 const {
     app,
     BrowserWindow,
@@ -6,6 +9,58 @@ const {
     ipcMain
 } = require("electron");
 
+let dataPath = path.join(__dirname, "data.json")
+
+function readData() {
+    try {
+        const rawData = fs.readFileSync(dataPath, "utf8")
+        const data = JSON.parse(rawData)
+
+        return {
+            history: Array.isArray(data.history) ? data.history : [],
+            bookmarks: Array.isArray(data.bookmarks) ? data.bookmarks : []
+        };
+    } catch (error) {
+        const initialData = {
+            history: [],
+            bookmarks: []
+        };
+
+        writeData(initialData);
+        return initialData;
+    }
+};
+
+function addData([title, url, visitedAt, duration], type) {
+    if (type === "history") {
+        const data = readData();
+        data.history.unshift({
+            title: title,
+            url: url,
+            visitedAt: visitedAt,
+            duration: duration
+        });
+        fs.writeFileSync(
+            dataPath,
+            JSON.stringify(data, null, 2),
+            "utf8"
+        );
+    }
+
+    if (type === "bookmarks") {
+        const data = readData();
+        data.bookmarks.unshift({
+            title: title,
+            url: url
+        });
+
+        fs.writeFileSync(
+            dataPath,
+            JSON.stringify(data, null, 2),
+            "utf8"
+        );
+    }
+};
 
 let webView;
 
@@ -58,5 +113,6 @@ ipcMain.on("forward-domain", (event, data) => {
         webView.webContents.loadURL(data.domain);
     }
 })
+
 
 app.whenReady().then(createWindow);
