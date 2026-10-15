@@ -50,6 +50,10 @@ body {
     flex-shrink: 0;
 }
 
+.tab-row.fullscreen {
+  padding-left: 2vw;
+}
+
 .tab-bar {
     display: flex;
     align-items: flex-end;

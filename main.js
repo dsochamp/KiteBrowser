@@ -10,7 +10,7 @@ const {
 } = require("electron");
 
 let dataPath = path.join(__dirname, "data.json")
-
+/*
 function readData() {
     try {
         const rawData = fs.readFileSync(dataPath, "utf8")
@@ -61,7 +61,7 @@ function addData([title, url, visitedAt, duration], type) {
         );
     }
 };
-
+*/
 let webView;
 
 function createWindow() {
@@ -78,6 +78,15 @@ function createWindow() {
     });
 
     win.loadFile("index.html");
+
+    win.on("enter-full-screen", () => {
+        win.webContents.send("movetrafficlights", true)
+    });
+
+    win.on("leave-full-screen", () => {
+        win.webContents.send("movetrafficlights", false)
+    });
+
     webView = new WebContentsView();
 
     win.contentView.addChildView(webView);

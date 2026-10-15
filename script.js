@@ -181,3 +181,13 @@ forwardbtn.addEventListener('click', () => {
     activeTabIndex -= 1;
   }
 });
+
+window.electronAPI.trafficlightsChanged((isFullscreen) => {
+  const tabRow = document.querySelector(".tab-row")
+
+  if (isFullscreen) {
+    tabRow.classList.add("fullscreen")
+  } else {
+    tabRow.classList.remove("fullscreen")
+  }
+})

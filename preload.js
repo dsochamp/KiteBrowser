@@ -15,5 +15,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     backPage: (domain) => {
         ipcRenderer.send("forward-domain", domain)
+    },
+
+    trafficlightsChanged: (callback) => {
+        ipcRenderer.on("movetrafficlights", (_event, isFullScreen) => callback(isFullScreen))
     }
 });
