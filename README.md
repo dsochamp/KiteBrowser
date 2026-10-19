@@ -1,8 +1,14 @@
 # KiteBrowser
 
+![App Picture](https://user-cdn.hackclub-assets.com/01a13f9c-baac-7c19-b0a0-d9960052f47b/Screenshot%202026-10-15%20at%204.37.15%E2%80%AFpm.png)
+
 ## TL:DR
 
 KiteBrowser is a browser built using ```electronjs``` as a compiler. The app works by being run on HTML, CSS and JS compiled into a macOS app (for now) using ```electronjs```. Using the webviewer and Chromium content that electronjs uses you can create more webviews, creating the ability to request HTML content from webpages and put it inside a webview.
+
+## Installation
+
+When you install the ```.zip``` from the Github release you have to unzip the folder, then open a Terminal at the location of the folder and run this command: ```open "kitebrowser.app"```.
 
 ## Tech-Stack
 
