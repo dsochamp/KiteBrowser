@@ -92,6 +92,10 @@ function createWindow() {
     win.contentView.addChildView(webView);
 
     webView.webContents.loadURL("https://google.com");
+
+    webView.webContents.on("did-finish-load", () => {
+        win.webContents.send("urlchanged", webView.webContents.getURL())
+    });
 }
 
 ipcMain.on("set-page-bounds", (event, bounds) => {

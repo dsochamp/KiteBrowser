@@ -19,5 +19,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     trafficlightsChanged: (callback) => {
         ipcRenderer.on("movetrafficlights", (_event, isFullScreen) => callback(isFullScreen))
+    },
+
+    URLchanged: (callback) => {
+        ipcRenderer.on("urlchanged", (_event, URLchanged) => callback(URLchanged))
     }
 });

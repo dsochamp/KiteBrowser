@@ -1,6 +1,6 @@
 let landingpage = 'https://google.com';
 let searchBoxContent = document.getElementById('search');
-const tabs = [{ title: 'Home' , domain: 'https://google.com'}];
+const tabs = [{ title: 'Home' , domain: landingpage, history: [landingpage], historyIndex: 0}];
 let activeTabIndex = 0;
 
 function renderTabs() {
@@ -35,7 +35,7 @@ function renderTabs() {
       tabs.splice(index, 1);
 
       if (tabs.length === 0) {
-        tabs.push({ title: 'Tab 1', domain: landingpage });
+        tabs.push({ title: 'Tab 1', domain: landingpage, history: [landingpage], historyIndex: 0});
       }
 
       if (index <= activeTabIndex) {
@@ -74,10 +74,12 @@ function renderTabs() {
 
 function addTab() {
   const nextNumber = tabs.length + 1;
-  tabs.push({ title: `Tab ${nextNumber}`, domain: landingpage});
-  window.electronAPI.searchDomain({ domain: landingpage });
+  tabs.push({ title: `Tab ${nextNumber}`, domain: landingpage, history: [landingpage], historyIndex: 0});
+  window.electronAPI.searchDomain({
+    domain: landingpage 
+  });
   activeTabIndex = tabs.length - 1;
-  searchBoxContent.value = '';
+  searchBoxContent.value = landingpage;
   renderTabs();
 }
 
@@ -103,16 +105,6 @@ function updateWebViewSize() {
   });
 }
 
-
-const observer = new ResizeObserver(updateWebViewSize);
-
-observer.observe(page);
-
-updateWebViewSize();
-
-let recenttabs = ['https://google.com'];
-let currenttab = '';
-
 document.addEventListener('DOMContentLoaded', () => {
   const refreshButton = document.getElementById("refresh");
   if (refreshButton) {
@@ -122,6 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderTabs();
+
+  const observer = new ResizeObserver(updateWebViewSize);
+
+  observer.observe(page);
+
+  updateWebViewSize();
 });
 
 document.addEventListener('keydown', (event) => {
@@ -133,10 +131,10 @@ document.addEventListener('keydown', (event) => {
 
       if (searchQuery.includes(' ')) {
         searchQuery = 'https://google.com/search?q=' + searchQuery.replaceAll(' ', '+');
-      } else if ((!searchQuery.startsWith('https://') || !searchQuery.startsWith('http://') || !searchQuery.startsWith('localhost:')) && searchQuery.includes('.')) {
+      } else if ((!searchQuery.startsWith('https://') && !searchQuery.startsWith('http://') && !searchQuery.startsWith('localhost:')) && searchQuery.includes('.')) {
         searchQuery = 'https://' + searchQuery;
         tabs[activeTabIndex].title = searchQuery.split('/')[2];
-      } else if (searchQuery.startsWith('file:///' && !searchQuery.includes(' '))) {
+      } else if (searchQuery.startsWith('file:///') && !searchQuery.includes(' ')) {
         searchQuery = searchQuery;
       } else {
         searchQuery = 'https://google.com/search?q=' + searchQuery;
@@ -145,11 +143,13 @@ document.addEventListener('keydown', (event) => {
       window.electronAPI.searchDomain({
         domain: searchQuery
       });
-        
-      currenttab = searchQuery;
-      recenttabs.push(searchQuery);
 
-      tabs[activeTabIndex].domain = searchQuery;
+      const tab = tabs[activeTabIndex];
+
+      tab.history.push(searchQuery);
+      tab.historyIndex = tab.history.length - 1;
+      tab.history = tab.history.slice(0, tab.historyIndex + 1);
+      tab.domain = searchQuery;
       renderTabs();
     }
   }
@@ -157,28 +157,38 @@ document.addEventListener('keydown', (event) => {
 
 let backbtn = document.getElementById('back')
 backbtn.addEventListener('click', () => {
-  if (!(recenttabs[(recenttabs.indexOf(currenttab) - 1)] === undefined)) {
-    window.electronAPI.backPage({
-      domain: recenttabs[(recenttabs.indexOf(currenttab) - 1)]
-    });
-    searchBoxContent.value = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
 
-    currenttab = recenttabs[(recenttabs.indexOf(currenttab) - 1)];
-    activeTabIndex -= 1;
+  const tab = tabs[activeTabIndex]
+
+  const pageBehind = tab.history[tab.historyIndex - 1];
+
+  if (!(pageBehind === undefined)) {
+    window.electronAPI.searchDomain({
+      domain: pageBehind
+    });
+
+    tab.historyIndex -= 1;
+    tab.domain = pageBehind;
+    searchBoxContent.value = pageBehind;
   }
 });
 
 
 let forwardbtn = document.getElementById('forward')
 forwardbtn.addEventListener('click', () => {
-  if (!(recenttabs[(recenttabs.indexOf(currenttab) + 1)] === undefined)) {
-    window.electronAPI.backPage({
-      domain: recenttabs[(recenttabs.indexOf(currenttab) + 1)]
-    });
-    searchBoxContent.value = recenttabs[(recenttabs.indexOf(currenttab) + 1)];
 
-    currenttab = recenttabs[(recenttabs.indexOf(currenttab) + 1)];
-    activeTabIndex -= 1;
+  const tab = tabs[activeTabIndex];
+
+  const pageFront = tab.history[tab.historyIndex + 1];
+
+  if (!(pageFront === undefined)) {
+    window.electronAPI.searchDomain({
+      domain: pageFront
+    });
+    
+    tab.historyIndex += 1;
+    tab.domain = pageFront
+    searchBoxContent.value = pageFront;
   }
 });
 
@@ -191,3 +201,14 @@ window.electronAPI.trafficlightsChanged((isFullscreen) => {
     tabRow.classList.remove("fullscreen")
   }
 })
+
+window.electronAPI.URLchanged((URLchanged) => {
+  const tab = tabs[activeTabIndex];
+
+  if (!tab || !URLchanged) return;
+
+  tab.domain = URLchanged;
+  tab.title = URLchanged.split("/")[2];
+  activeTabIndex = tab.length - 1;
+  renderTabs();
+});
