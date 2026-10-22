@@ -1,6 +1,6 @@
 {
-  "name": "kitebrowser",
-  "version": "1.0.0",
+  "name": "Kite",
+  "version": "1.0.1",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -12,6 +12,29 @@
     "type": "git",
     "url": "git+https://github.com/dsochamp/KiteBrowser.git"
   },
+  "config": {
+    "forge": {
+      "rebuildConfig": {},
+      "packagerConfig": {
+        "icon": [
+            "./build/icon.icns",
+            "./Images/icons.icon"
+        ]
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": ["darwin"]
+        },
+        {
+          "name": "@electron-forge/maker-dmg",
+          "config": {
+            "format": "ULFO"
+          }
+        }
+      ]
+    }
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -22,6 +45,7 @@
   "homepage": "https://github.com/dsochamp/KiteBrowser#readme",
   "devDependencies": {
     "@electron-forge/cli": "^8.0.1",
+    "@electron-forge/maker-dmg": "^8.0.1",
     "@electron-forge/maker-zip": "^8.0.1",
     "electron": "^44.5.1",
     "electron-builder": "^26.15.3"

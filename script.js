@@ -59,10 +59,9 @@ function renderTabs() {
       const searchBox = document.getElementById('search');
       searchBox.value = tabs[activeTabIndex].domain;
       window.electronAPI.searchDomain({
-        domain: tabs[index].domain
+        domain: tabs[activeTabIndex].domain
       });
       renderTabs();
-
     });
 
     tabEl.append(icon, label, close);
@@ -79,7 +78,7 @@ function addTab() {
     domain: landingpage 
   });
   activeTabIndex = tabs.length - 1;
-  searchBoxContent.value = landingpage;
+  searchBoxContent.value = '';
   renderTabs();
 }
 
@@ -127,16 +126,14 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
     if (document.activeElement === searchBoxContent) {
 
-      let searchQuery = searchBoxContent.value.replace('https://', '').replace('localhost:', '').trim();
+      let searchQuery = searchBoxContent.value.trim();
 
       if (searchQuery.includes(' ')) {
         searchQuery = 'https://google.com/search?q=' + searchQuery.replaceAll(' ', '+');
       } else if ((!searchQuery.startsWith('https://') && !searchQuery.startsWith('http://') && !searchQuery.startsWith('localhost:')) && searchQuery.includes('.')) {
         searchQuery = 'https://' + searchQuery;
         tabs[activeTabIndex].title = searchQuery.split('/')[2];
-      } else if (searchQuery.startsWith('file:///') && !searchQuery.includes(' ')) {
-        searchQuery = searchQuery;
-      } else {
+      } else if (!searchQuery.startsWith('https://') && !searchQuery.startsWith('http://') && !searchQuery.startsWith('file:///')) {
         searchQuery = 'https://google.com/search?q=' + searchQuery;
       }
 
@@ -146,10 +143,11 @@ document.addEventListener('keydown', (event) => {
 
       const tab = tabs[activeTabIndex];
 
+      tab.history = tab.history.slice(0, tab.historyIndex + 1);
       tab.history.push(searchQuery);
       tab.historyIndex = tab.history.length - 1;
-      tab.history = tab.history.slice(0, tab.historyIndex + 1);
       tab.domain = searchQuery;
+      tab.title = searchQuery;
       renderTabs();
     }
   }
@@ -158,7 +156,7 @@ document.addEventListener('keydown', (event) => {
 let backbtn = document.getElementById('back')
 backbtn.addEventListener('click', () => {
 
-  const tab = tabs[activeTabIndex]
+  const tab = tabs[activeTabIndex];
 
   const pageBehind = tab.history[tab.historyIndex - 1];
 
@@ -170,6 +168,7 @@ backbtn.addEventListener('click', () => {
     tab.historyIndex -= 1;
     tab.domain = pageBehind;
     searchBoxContent.value = pageBehind;
+    tab.title = tab.domain.split("/")[2];
   }
 });
 
@@ -187,8 +186,9 @@ forwardbtn.addEventListener('click', () => {
     });
     
     tab.historyIndex += 1;
-    tab.domain = pageFront
+    tab.domain = pageFront;
     searchBoxContent.value = pageFront;
+    tab.title = tab.domain.split("/")[2];
   }
 });
 
@@ -209,6 +209,6 @@ window.electronAPI.URLchanged((URLchanged) => {
 
   tab.domain = URLchanged;
   tab.title = URLchanged.split("/")[2];
-  activeTabIndex = tab.length - 1;
+  searchBoxContent.value = URLchanged;
   renderTabs();
 });
