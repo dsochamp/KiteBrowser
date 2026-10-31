@@ -9,12 +9,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.send("reload-page");
     },
 
-    searchDomain: (domain) => {
-        ipcRenderer.send("search-domain", domain);
+    searchDomain: (domain, number) => {
+        ipcRenderer.send("search-domain", domain, number);
     },
 
     backPage: (domain) => {
         ipcRenderer.send("forward-domain", domain)
+    },
+
+    switchTab: (number) => {
+        ipcRenderer.send("switch-tab", number)
     },
 
     trafficlightsChanged: (callback) => {
@@ -23,5 +27,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     URLchanged: (callback) => {
         ipcRenderer.on("urlchanged", (_event, URLchanged) => callback(URLchanged))
+    },
+    addTab: (boolean, number) => {
+        ipcRenderer.send("add-tab", boolean, number);
+    },
+    getTitle: (callback) => {
+        ipcRenderer.on("get-title", (_event, getTitle) => callback(getTitle))
+    },
+    closeTab: (number) => {
+        ipcRenderer.on("close-tab", number)
     }
 });

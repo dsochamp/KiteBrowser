@@ -1,4 +1,3 @@
-const { create } = require("domain");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -62,10 +61,14 @@ function addData([title, url, visitedAt, duration], type) {
     }
 };
 */
-let webView;
+let webViews = [];
+
+let activeTabIndex = 0;
+
+let currentBounds = { x: 0, y: 0, width: 800, height: 600 };
 
 function createWindow() {
-    const win = new BrowserWindow({
+    let win = BrowserWindow.getFocusedWindow() || new BrowserWindow({
         width: 1200,
         height: 800,
 
@@ -87,43 +90,123 @@ function createWindow() {
         win.webContents.send("movetrafficlights", false)
     });
 
-    webView = new WebContentsView();
+    const intitialView = new WebContentsView();
+    webViews.push(intitialView);
 
-    win.contentView.addChildView(webView);
+    win.contentView.addChildView(intitialView);
 
-    webView.webContents.loadURL("https://google.com");
+    intitialView.webContents.loadURL("https://google.com");
 
-    webView.webContents.on("did-finish-load", () => {
-        win.webContents.send("urlchanged", webView.webContents.getURL())
+    intitialView.webContents.on("did-finish-load", () => {
+        win.webContents.send("urlchanged", intitialView.webContents.getURL());
+        win.webContents.send("get-title", intitialView.webContents.getTitle())
     });
 }
 
 ipcMain.on("set-page-bounds", (event, bounds) => {
-    if (!webView) return;
 
-    webView.setBounds ({
-        x: Math.round(bounds.x),
-        y: Math.round(bounds.y),
-        width: Math.round(bounds.width),
-        height: Math.round(bounds.height)
+    currentBounds = bounds;
+    if (webViews.length === 0) return;
+
+    webViews.forEach((view) => {
+        if (view) {
+            view.setBounds({
+                x: Math.round(bounds.x),
+                y: Math.round(bounds.y),
+                width: Math.round(bounds.width),
+                height: Math.round(bounds.height)
+            });
+        }
     });
 });
 
 ipcMain.on("reload-page", () => {
-    if (webView && webView.webContents) {
-        webView.webContents.reload();
+    const activeView = webViews[activeTabIndex];
+    if (activeView && activeView.webContents) {
+        activeView.webContents.reload();
     }
 });
 
 ipcMain.on("search-domain", (event, data) => {
-    if (webView && webView.webContents) {
-        webView.webContents.loadURL(data.domain);
+    const targetIndex = data.number ?? activeTabIndex;
+    const targetView = webViews[targetIndex];
+
+    if (targetView && targetView.webContents) {
+        targetView.webContents.loadURL(data.domain);
     }
 })
 
 ipcMain.on("forward-domain", (event, data) => {
-    if(webView && webView.webContents) {
-        webView.webContents.loadURL(data.domain);
+    const activeView = webViews[activeTabIndex];
+    if(activeView && activeView.webContents) {
+        activeView.webContents.loadURL(data.domain);
+    }
+})
+
+ipcMain.on("switch-tab", (event, data) => {
+    const win = BrowserWindow.getFocusedWindow();
+    activeTabIndex = data.number;
+    const activeView = webViews[activeTabIndex];
+
+    if (activeView) {
+        win.contentView.removeChildView(activeView);
+        win.contentView.addChildView(activeView);
+        win.webContents.send("urlchanged", activeView.webContents.getURL());
+        win.webContents.send("get-title", activeView.webContents.getTitle());
+    }
+});
+
+ipcMain.on("close-tab", (event, data) => {
+    const win = BrowserWindow.getFocusedWindow();
+    const index = data.number;
+
+    if (!win || !webViews[index]) return;
+
+    const closeView = webViews[index];
+
+    win.contentView.removeChildView(closeView);
+
+    closeView.webContents.close();
+
+    webViews.splice(index, 1);
+
+    if (webViews.length === 0) {
+        activeTabIndex = -1;
+        return;
+    }
+
+    if (activeTabIndex === index) {
+        activeTabIndex = Math.min(index, webViews.length - 1);
+    } else if (activeTabIndex > index) {
+        activeTabIndex --;
+    }
+});
+
+ipcMain.on("add-tab", (event, data) => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) return;
+
+    if (data.boolean) {
+        const newView = new WebContentsView();
+
+        newView.setBounds({ 
+            x: Math.round(currentBounds.x),
+            y: Math.round(currentBounds.y),
+            width: Math.round(currentBounds.width),
+            height: Math.round(currentBounds.height)
+        });
+
+        webViews.push(newView);
+
+        win.contentView.addChildView(newView);
+
+        activeTabIndex = webViews.length - 1;
+
+        newView.webContents.loadURL("https://google.com");
+
+        newView.webContents.on("did-finish-load", () => {
+            win.webContents.send("urlchanged", newView.webContents.getURL());
+        });
     }
 })
 
