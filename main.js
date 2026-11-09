@@ -67,6 +67,14 @@ let activeTabIndex = 0;
 
 let currentBounds = { x: 0, y: 0, width: 800, height: 600 };
 
+function handleNewTab(view, win) {
+    view.webContents.setWindowOpenHandler(({ url }) => {
+        win.webContents.send("new-tab", url);
+
+        return { action: "deny" };
+    });
+}
+
 function createWindow() {
     let win = BrowserWindow.getFocusedWindow() || new BrowserWindow({
         width: 1200,
@@ -91,6 +99,9 @@ function createWindow() {
     });
 
     const intitialView = new WebContentsView();
+
+    handleNewTab(intitialView, win);
+
     webViews.push(intitialView);
 
     win.contentView.addChildView(intitialView);
@@ -101,6 +112,7 @@ function createWindow() {
         win.webContents.send("urlchanged", intitialView.webContents.getURL());
         win.webContents.send("get-title", intitialView.webContents.getTitle())
     });
+
 }
 
 ipcMain.on("set-page-bounds", (event, bounds) => {
@@ -189,6 +201,8 @@ ipcMain.on("add-tab", (event, data) => {
     if (data.boolean) {
         const newView = new WebContentsView();
 
+        handleNewTab(newView, win);
+
         newView.setBounds({ 
             x: Math.round(currentBounds.x),
             y: Math.round(currentBounds.y),
@@ -202,7 +216,7 @@ ipcMain.on("add-tab", (event, data) => {
 
         activeTabIndex = webViews.length - 1;
 
-        newView.webContents.loadURL("https://google.com");
+        newView.webContents.loadURL(data.domain || "https://google.com");
 
         newView.webContents.on("did-finish-load", () => {
             win.webContents.send("urlchanged", newView.webContents.getURL());

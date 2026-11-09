@@ -36,5 +36,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     },
     closeTab: (number) => {
         ipcRenderer.on("close-tab", number)
-    }
+    },
+
+    openNewTab: (callback) => {
+        ipcRenderer.on("new-tab", (event, url) => callback(url));
+    },
+
+    addTab: (data) => ipcRenderer.send("add-tab", data)
 });

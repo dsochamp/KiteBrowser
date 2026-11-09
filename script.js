@@ -159,7 +159,11 @@ document.addEventListener('keydown', (event) => {
       tab.history.push(searchQuery);
       tab.historyIndex = tab.history.length - 1;
       tab.domain = searchQuery;
-      tab.title = searchQuery;
+      window.electronAPI.getTitle((getTitle) => { 
+        const tab = tabs[activeTabIndex]; 
+        if (!tab || !getTitle) return 'google.com'; 
+        tab.title = getTitle; 
+      });
       renderTabs();
     }
   }
@@ -180,7 +184,11 @@ backbtn.addEventListener('click', () => {
     tab.historyIndex -= 1;
     tab.domain = pageBehind;
     searchBoxContent.value = pageBehind;
-    tab.title = tab.domain.split("/")[2];
+    window.electronAPI.getTitle((getTitle) => { 
+      const tab = tabs[activeTabIndex]; 
+      if (!tab || !getTitle) return 'google.com'; 
+      tab.title = getTitle; 
+    });
   }
 });
 
@@ -200,7 +208,11 @@ forwardbtn.addEventListener('click', () => {
     tab.historyIndex += 1;
     tab.domain = pageFront;
     searchBoxContent.value = pageFront;
-    tab.title = tab.domain.split("/")[2];
+    window.electronAPI.getTitle((getTitle) => { 
+      const tab = tabs[activeTabIndex]; 
+      if (!tab || !getTitle) return 'google.com'; 
+      tab.title = getTitle; 
+    });
   }
 });
 
@@ -219,8 +231,13 @@ window.electronAPI.URLchanged((URLchanged) => {
 
   if (!tab || !URLchanged) return;
 
+  window.electronAPI.getTitle((getTitle) => { 
+    const tab = tabs[activeTabIndex]; 
+    if (!tab || !getTitle) return 'google.com'; 
+    tab.title = getTitle; 
+  });
+
   tab.domain = URLchanged;
-  tab.title = URLchanged.split("/")[2];
   searchBoxContent.value = URLchanged;
   renderTabs();
 });
@@ -231,4 +248,32 @@ window.electronAPI.getTitle((getTitle) => {
   if (!tab || !getTitle) return;
 
   tab.title = getTitle;
+});
+
+window.electronAPI.openNewTab((url) => {
+    const nextNumber = tabs.length + 1;
+
+    tabs.push({
+        title: 'loading title...',
+        domain: url,
+        history: [url],
+        historyIndex: 0
+    });
+
+    window.electronAPI.getTitle((getTitle) => { 
+      const tab = tabs[activeTabIndex]; 
+      if (!tab || !getTitle) return 'google.com'; 
+      tabs[-1].title = getTitle; 
+    });
+
+    activeTabIndex = tabs.length - 1;
+
+    window.electronAPI.addTab({
+        boolean: true,
+        domain: url
+    });
+
+    searchBoxContent.value = url;
+
+    renderTabs();
 });
