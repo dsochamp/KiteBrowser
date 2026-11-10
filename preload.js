@@ -17,6 +17,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.send("forward-domain", domain)
     },
 
+    bookmarkTab: (domain) => {
+        ipcRenderer.send("bookmark-tab", domain)
+    },
+
     switchTab: (number) => {
         ipcRenderer.send("switch-tab", number)
     },

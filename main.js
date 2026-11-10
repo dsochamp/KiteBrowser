@@ -9,7 +9,7 @@ const {
 } = require("electron");
 
 let dataPath = path.join(__dirname, "data.json")
-/*
+
 function readData() {
     try {
         const rawData = fs.readFileSync(dataPath, "utf8")
@@ -30,14 +30,12 @@ function readData() {
     }
 };
 
-function addData([title, url, visitedAt, duration], type) {
+function addData([url, visitedAt], type) {
     if (type === "history") {
         const data = readData();
         data.history.unshift({
-            title: title,
             url: url,
-            visitedAt: visitedAt,
-            duration: duration
+            visitedAt: visitedAt
         });
         fs.writeFileSync(
             dataPath,
@@ -60,7 +58,7 @@ function addData([title, url, visitedAt, duration], type) {
         );
     }
 };
-*/
+
 let webViews = [];
 
 let activeTabIndex = 0;
@@ -140,20 +138,31 @@ ipcMain.on("reload-page", () => {
 });
 
 ipcMain.on("search-domain", (event, data) => {
+    const now = new Date();
+    const time = now.toLocaleTimeString(); 
     const targetIndex = data.number ?? activeTabIndex;
     const targetView = webViews[targetIndex];
 
     if (targetView && targetView.webContents) {
         targetView.webContents.loadURL(data.domain);
     }
-})
+
+    addData([data.domain, time], 'history');
+});
+
+ipcMain.on("bookmark-tab", (event, data) => {
+    const now = new Date();
+    const time = now.toLocaleTimeString(); 
+
+    addData([data.domain, time], 'bookmarks');
+});
 
 ipcMain.on("forward-domain", (event, data) => {
     const activeView = webViews[activeTabIndex];
     if(activeView && activeView.webContents) {
         activeView.webContents.loadURL(data.domain);
     }
-})
+});
 
 ipcMain.on("switch-tab", (event, data) => {
     const win = BrowserWindow.getFocusedWindow();
@@ -226,3 +235,45 @@ ipcMain.on("add-tab", (event, data) => {
 
 
 app.whenReady().then(createWindow);
+
+const { Menu } = require('electron');
+const { type } = require("node:os");
+
+const template = [
+  {
+    label: 'File',
+    submenu: [
+      { role: 'quit' },
+      { type: 'separator'}, // Keeps Cmd+Q / Alt+F4 to quit, without Cmd+W window close
+      { label: 'History', accelerator: 'CmdOrCtrl+H'},
+      {label: 'Bookmarks', accelerator: 'CmdOrCtrl+B'}
+    ]
+  },
+  {
+    label: 'Edit',
+    role: 'editMenu' // Populates standard Cut, Copy, Paste, Undo, Redo, Select All, etc.
+  },
+
+  // Preset View Menu
+  {
+    label: 'View',
+    role: 'viewMenu' // Populates Reload, Force Reload, Toggle DevTools, Zoom, Fullscreen
+  },
+
+  // Preset Window Menu
+  {
+    label: 'Window',
+    role: 'windowMenu' // Populates Minimize, Zoom, Close, etc.
+  },
+
+  {
+    label: 'Tab',
+    submenu: [
+        { label: 'New Tab', accelerator: 'CmdOrCtrl+T'},
+        { label: 'Close Tab', accelerator: 'CmdOrCtrl+W'}
+    ]
+  }
+];
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
