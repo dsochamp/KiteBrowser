@@ -1,34 +1,16 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
+
 const {
     app,
     BrowserWindow,
     WebContentsView,
+    globalShortcut,
     ipcMain
 } = require("electron");
 
 let dataPath = path.join(__dirname, "data.json")
-
-function readData() {
-    try {
-        const rawData = fs.readFileSync(dataPath, "utf8")
-        const data = JSON.parse(rawData)
-
-        return {
-            history: Array.isArray(data.history) ? data.history : [],
-            bookmarks: Array.isArray(data.bookmarks) ? data.bookmarks : []
-        };
-    } catch (error) {
-        const initialData = {
-            history: [],
-            bookmarks: []
-        };
-
-        writeData(initialData);
-        return initialData;
-    }
-};
 
 function addData([url, visitedAt], type) {
     if (type === "history") {
@@ -47,7 +29,6 @@ function addData([url, visitedAt], type) {
     if (type === "bookmarks") {
         const data = readData();
         data.bookmarks.unshift({
-            title: title,
             url: url
         });
 
@@ -58,6 +39,8 @@ function addData([url, visitedAt], type) {
         );
     }
 };
+
+
 
 let webViews = [];
 
@@ -72,6 +55,7 @@ function handleNewTab(view, win) {
         return { action: "deny" };
     });
 }
+
 
 function createWindow() {
     let win = BrowserWindow.getFocusedWindow() || new BrowserWindow({
@@ -113,6 +97,58 @@ function createWindow() {
 
 }
 
+
+function addHistory() {
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) return;
+    const newView = new WebContentsView({
+        webPreferences: {
+            preload: path.join(__dirname, "history-preload.js")
+        }
+    });
+
+    handleNewTab(newView, win);
+
+    newView.setBounds({ 
+        x: Math.round(currentBounds.x),
+        y: Math.round(currentBounds.y),
+        width: Math.round(currentBounds.width),
+        height: Math.round(currentBounds.height)
+    });
+
+    webViews.push(newView);
+
+    win.contentView.addChildView(newView);
+
+    activeTabIndex = webViews.length - 1;
+
+    newView.webContents.loadFile(path.join(__dirname, 'history.html'));
+};
+
+
+function readData() {
+    const win = BrowserWindow.getFocusedWindow();
+    try {
+        const rawData = fs.readFileSync(dataPath, "utf8");
+        const data = JSON.parse(rawData);
+
+        return data;
+        
+
+        
+    } catch (error) {
+        const initialData = { history: [], bookmarks: [] };
+        fs.writeFileSync(dataPath, JSON.stringify(initialData, null, 2), "utf8");
+        addHistory();
+        win.webContents.send("send-history", initialData);
+
+        return initialData
+
+    }
+}
+
+
+
 ipcMain.on("set-page-bounds", (event, bounds) => {
 
     currentBounds = bounds;
@@ -138,14 +174,16 @@ ipcMain.on("reload-page", () => {
 });
 
 ipcMain.on("search-domain", (event, data) => {
-    const now = new Date();
-    const time = now.toLocaleTimeString(); 
+    
     const targetIndex = data.number ?? activeTabIndex;
     const targetView = webViews[targetIndex];
 
     if (targetView && targetView.webContents) {
         targetView.webContents.loadURL(data.domain);
     }
+    
+    const now = new Date();
+    const time = now.toLocaleTimeString(); 
 
     addData([data.domain, time], 'history');
 });
@@ -157,11 +195,20 @@ ipcMain.on("bookmark-tab", (event, data) => {
     addData([data.domain, time], 'bookmarks');
 });
 
+ipcMain.on("request-history", (event) => {
+    event.reply("send-history", readData());
+});
+
 ipcMain.on("forward-domain", (event, data) => {
     const activeView = webViews[activeTabIndex];
     if(activeView && activeView.webContents) {
         activeView.webContents.loadURL(data.domain);
     }
+
+    const now = new Date();
+    const time = now.toLocaleTimeString(); 
+
+    addData([data.domain, time], 'history');
 });
 
 ipcMain.on("switch-tab", (event, data) => {
@@ -175,6 +222,12 @@ ipcMain.on("switch-tab", (event, data) => {
         win.webContents.send("urlchanged", activeView.webContents.getURL());
         win.webContents.send("get-title", activeView.webContents.getTitle());
     }
+
+
+    const now = new Date();
+    const time = now.toLocaleTimeString(); 
+
+    addData([activeView.webContents.getURL(), time], 'history');
 });
 
 ipcMain.on("close-tab", (event, data) => {
@@ -187,7 +240,7 @@ ipcMain.on("close-tab", (event, data) => {
 
     win.contentView.removeChildView(closeView);
 
-    closeView.webContents.close();
+    closeView.webContents.destroy();
 
     webViews.splice(index, 1);
 
@@ -202,6 +255,7 @@ ipcMain.on("close-tab", (event, data) => {
         activeTabIndex --;
     }
 });
+
 
 ipcMain.on("add-tab", (event, data) => {
     const win = BrowserWindow.getFocusedWindow();
@@ -231,10 +285,19 @@ ipcMain.on("add-tab", (event, data) => {
             win.webContents.send("urlchanged", newView.webContents.getURL());
         });
     }
-})
+});
 
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    dataPath = path.join(app.getPath('userData'), "data.json");
+    createWindow();
+    
+    // FIX: Register the shortcut here, after the app is ready
+    globalShortcut.register('Command+Y', () => {
+        addHistory();
+    });
+});
+
 
 const { Menu } = require('electron');
 const { type } = require("node:os");
@@ -245,7 +308,7 @@ const template = [
     submenu: [
       { role: 'quit' },
       { type: 'separator'}, // Keeps Cmd+Q / Alt+F4 to quit, without Cmd+W window close
-      { label: 'History', accelerator: 'CmdOrCtrl+H'},
+      { label: 'History', accelerator: 'CmdOrCtrl+Y'},
       {label: 'Bookmarks', accelerator: 'CmdOrCtrl+B'}
     ]
   },

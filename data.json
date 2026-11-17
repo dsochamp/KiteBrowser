@@ -2,6 +2,22 @@
   "history": [
     {
       "url": "https://drfrost.org",
+      "visitedAt": "9:35:23 AM"
+    },
+    {
+      "url": "https://drfrost.org",
+      "visitedAt": "9:34:23 AM"
+    },
+    {
+      "url": "https://www.google.com/rg",
+      "visitedAt": "9:34:19 AM"
+    },
+    {
+      "url": "https://drfrost.org",
+      "visitedAt": "9:33:28 AM"
+    },
+    {
+      "url": "https://drfrost.org",
       "visitedAt": "4:56:32 PM"
     },
     {
@@ -14,6 +30,9 @@
     }
   ],
   "bookmarks": [
+    {
+      "url": "https://www.drfrost.org/"
+    },
     {
       "title": "Hackclub",
       "url": "https://hackclub.com"

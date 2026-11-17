@@ -192,6 +192,15 @@ backbtn.addEventListener('click', () => {
   }
 });
 
+let bookmarkbtn = document.getElementById('bookmark')
+bookmarkbtn.addEventListener('click', () => {
+  const tab = tabs[activeTabIndex]
+  tabdomain = tab.domain
+
+  window.electronAPI.bookmarkTab({
+    domain: tabdomain
+  });
+})
 
 let forwardbtn = document.getElementById('forward')
 forwardbtn.addEventListener('click', () => {
@@ -262,7 +271,7 @@ window.electronAPI.openNewTab((url) => {
 
     window.electronAPI.getTitle((getTitle) => { 
       const tab = tabs[activeTabIndex]; 
-      if (!tab || !getTitle) return 'google.com'; 
+      if (!tab || !getTitle) return 'No title'; 
       tabs[-1].title = getTitle; 
     });
 
@@ -277,3 +286,18 @@ window.electronAPI.openNewTab((url) => {
 
     renderTabs();
 });
+/*
+window.electronAPI.retrieveJSON((jsoninfo) => {
+  const tbody = document.getElementById('tablehistory');
+
+  for ( let i = 0; i < jsoninfo.history.length - 1; i++) {
+    const row = document.createElement('tr')
+
+      row.innerHTML = `
+          <td>${jsoninfo.history[i].url || 'N/A '}</td>
+          <td>${jsoninfo.history[i].visitedAt}</td>
+      `
+
+      tbody.innerHTML.appendChild(row);
+  }
+});*/

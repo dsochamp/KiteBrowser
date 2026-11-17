@@ -47,4 +47,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
     },
 
     addTab: (data) => ipcRenderer.send("add-tab", data)
+
 });
