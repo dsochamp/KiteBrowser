@@ -286,18 +286,3 @@ window.electronAPI.openNewTab((url) => {
 
     renderTabs();
 });
-/*
-window.electronAPI.retrieveJSON((jsoninfo) => {
-  const tbody = document.getElementById('tablehistory');
-
-  for ( let i = 0; i < jsoninfo.history.length - 1; i++) {
-    const row = document.createElement('tr')
-
-      row.innerHTML = `
-          <td>${jsoninfo.history[i].url || 'N/A '}</td>
-          <td>${jsoninfo.history[i].visitedAt}</td>
-      `
-
-      tbody.innerHTML.appendChild(row);
-  }
-});*/

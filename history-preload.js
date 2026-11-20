@@ -7,5 +7,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
         });
 
         ipcRenderer.send("request-history");
+    },
+    
+    searchDomain: (domain, number) => {
+        ipcRenderer.send("search-domain", domain, number);
     }
 });

@@ -97,34 +97,67 @@ function createWindow() {
 
 }
 
+let historyView = null;
 
 function addHistory() {
     const win = BrowserWindow.getFocusedWindow();
     if (!win) return;
-    const newView = new WebContentsView({
+    historyView = new WebContentsView({
         webPreferences: {
             preload: path.join(__dirname, "history-preload.js")
         }
     });
 
-    handleNewTab(newView, win);
+    handleNewTab(historyView, win);
 
-    newView.setBounds({ 
+    historyView.setBounds({ 
         x: Math.round(currentBounds.x),
         y: Math.round(currentBounds.y),
         width: Math.round(currentBounds.width),
         height: Math.round(currentBounds.height)
     });
 
-    webViews.push(newView);
+    webViews.push(historyView);
 
-    win.contentView.addChildView(newView);
+    win.contentView.addChildView(historyView);
 
     activeTabIndex = webViews.length - 1;
 
-    newView.webContents.loadFile(path.join(__dirname, 'history.html'));
+    historyView.webContents.loadFile(path.join(__dirname, 'history.html'));
 };
 
+function removeHistory() {
+
+    const index = webViews.indexOf(historyView);
+
+    const win = BrowserWindow.getFocusedWindow();
+
+    if (!win || !historyView) return;
+
+    const closeView = historyView;
+
+    win.contentView.removeChildView(closeView);
+
+    if (!historyView.webContents.isDestroyed()) {
+        historyView.webContents.destroy();
+    }
+
+    historyView = null;
+
+    if (webViews.length === 0) {
+        activeTabIndex = -1;
+    } else {
+        activeTabIndex = Math.min(
+            activeTabIndex,
+            webViews.length - 1
+        );
+    }
+
+    if (webViews.length === 0) {
+        activeTabIndex = -1;
+        return;
+    }
+}
 
 function readData() {
     const win = BrowserWindow.getFocusedWindow();
@@ -139,8 +172,6 @@ function readData() {
     } catch (error) {
         const initialData = { history: [], bookmarks: [] };
         fs.writeFileSync(dataPath, JSON.stringify(initialData, null, 2), "utf8");
-        addHistory();
-        win.webContents.send("send-history", initialData);
 
         return initialData
 
@@ -226,8 +257,6 @@ ipcMain.on("switch-tab", (event, data) => {
 
     const now = new Date();
     const time = now.toLocaleTimeString(); 
-
-    addData([activeView.webContents.getURL(), time], 'history');
 });
 
 ipcMain.on("close-tab", (event, data) => {
@@ -246,7 +275,11 @@ ipcMain.on("close-tab", (event, data) => {
 
     if (webViews.length === 0) {
         activeTabIndex = -1;
-        return;
+    } else {
+        activeTabIndex = Math.min(
+            activeTabIndex,
+            webViews.length - 1
+        );
     }
 
     if (activeTabIndex === index) {
@@ -294,7 +327,11 @@ app.whenReady().then(() => {
     
     // FIX: Register the shortcut here, after the app is ready
     globalShortcut.register('Command+Y', () => {
-        addHistory();
+        if (!historyView) {
+            addHistory();
+        } else {
+            removeHistory();
+        }
     });
 });
 
@@ -308,7 +345,7 @@ const template = [
     submenu: [
       { role: 'quit' },
       { type: 'separator'}, // Keeps Cmd+Q / Alt+F4 to quit, without Cmd+W window close
-      { label: 'History', accelerator: 'CmdOrCtrl+Y'},
+      { label: 'History', accelerator: 'CmdOrCtrl+Y' },
       {label: 'Bookmarks', accelerator: 'CmdOrCtrl+B'}
     ]
   },
