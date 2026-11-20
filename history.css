@@ -1,0 +1,34 @@
+@font-face {
+  font-family: 'AgrandirReg';
+  src: url('Agrandir\ Font/Agrandir-Regular.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; 
+}
+
+body {
+    background-color: rgb(247, 247, 247);
+    font-family: 'AgrandirReg';
+    margin: 5vh;
+}
+
+* {
+  font-family: 'AgrandirReg';
+  corner-shape: squircle;
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  overflow: scroll;
+  padding-bottom: 10vh;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {background-color: coral;}
