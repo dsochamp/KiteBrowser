@@ -46,6 +46,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.on("new-tab", (event, url) => callback(url));
     },
 
-    addTab: (data) => ipcRenderer.send("add-tab", data)
+    addTab: (data) => ipcRenderer.send("add-tab", data),
+
+    darkMode: (callback) => {
+        ipcRenderer.on("dark-mode", (event, mode) => callback(mode));
+    }
 
 });

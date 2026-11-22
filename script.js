@@ -51,11 +51,13 @@ function renderTabs() {
       document.documentElement.style.setProperty('--tab-width', `${tabWidth}vw`);
 
       window.electronAPI.switchTab({
-        number: activeTabIndex
+        number: activeTabIndex + 1
       });
 
+      searchBoxContent.textContent = tabs[activeTabIndex + 1].url;
+
       window.electronAPI.closeTab({
-        number: activeTabIndex
+        number: tabs.indexOf(event)
       });
 
       renderTabs();
@@ -68,6 +70,7 @@ function renderTabs() {
       window.electronAPI.switchTab({
         number: activeTabIndex
       });
+      searchBoxContent.textContent = tabs[activeTabIndex].url;
       renderTabs();
     });
 
@@ -81,14 +84,19 @@ function renderTabs() {
 function addTab() {
   const nextNumber = tabs.length + 1;
   tabs.push({ title: `Tab ${nextNumber}`, domain: landingpage, history: [landingpage], historyIndex: 0});
+  activeTabIndex = tabs.length - 1;
   window.electronAPI.addTab({
     boolean: true,
+    domain: landingpage,
     number: activeTabIndex
   });
   window.electronAPI.searchDomain({
     domain: landingpage 
   });
-  activeTabIndex = tabs.length - 1;
+  window.electronAPI.switchTab({
+    number : activeTabIndex
+  });
+  searchBoxContent.textContent = tabs[activeTabIndex].url
   searchBoxContent.value = '';
   renderTabs();
 }
@@ -286,3 +294,4 @@ window.electronAPI.openNewTab((url) => {
 
     renderTabs();
 });
+

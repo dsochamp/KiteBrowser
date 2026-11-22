@@ -92,7 +92,7 @@ function createWindow() {
 
     intitialView.webContents.on("did-finish-load", () => {
         win.webContents.send("urlchanged", intitialView.webContents.getURL());
-        win.webContents.send("get-title", intitialView.webContents.getTitle())
+        win.webContents.send("get-title", intitialView.webContents.getTitle());
     });
 
 }
@@ -216,7 +216,9 @@ ipcMain.on("search-domain", (event, data) => {
     const now = new Date();
     const time = now.toLocaleTimeString(); 
 
-    addData([data.domain, time], 'history');
+    if (data.domain !== 'https://google.com') {
+        addData([data.domain, time], 'history');
+    };
 });
 
 ipcMain.on("bookmark-tab", (event, data) => {
@@ -259,9 +261,9 @@ ipcMain.on("switch-tab", (event, data) => {
     const time = now.toLocaleTimeString(); 
 });
 
-ipcMain.on("close-tab", (event, data) => {
+function closetab(number) {
     const win = BrowserWindow.getFocusedWindow();
-    const index = data.number;
+    const index = number;
 
     if (!win || !webViews[index]) return;
 
@@ -287,14 +289,17 @@ ipcMain.on("close-tab", (event, data) => {
     } else if (activeTabIndex > index) {
         activeTabIndex --;
     }
+};
+
+ipcMain.on("close-tab", (event, data) => {
+    closetab(data.number);
 });
 
-
-ipcMain.on("add-tab", (event, data) => {
+function addtab(boolean, domain) {
     const win = BrowserWindow.getFocusedWindow();
     if (!win) return;
 
-    if (data.boolean) {
+    if (boolean) {
         const newView = new WebContentsView();
 
         handleNewTab(newView, win);
@@ -308,16 +313,22 @@ ipcMain.on("add-tab", (event, data) => {
 
         webViews.push(newView);
 
+        console.log("Total tabs:", webViews.length);
+
         win.contentView.addChildView(newView);
 
         activeTabIndex = webViews.length - 1;
 
-        newView.webContents.loadURL(data.domain || "https://google.com");
+        newView.webContents.loadURL(domain || "https://google.com");
 
         newView.webContents.on("did-finish-load", () => {
             win.webContents.send("urlchanged", newView.webContents.getURL());
         });
     }
+}
+
+ipcMain.on("add-tab", (event, data) => {
+    addtab(data.boolean, data.domain);
 });
 
 
@@ -325,14 +336,7 @@ app.whenReady().then(() => {
     dataPath = path.join(app.getPath('userData'), "data.json");
     createWindow();
     
-    // FIX: Register the shortcut here, after the app is ready
-    globalShortcut.register('Command+Y', () => {
-        if (!historyView) {
-            addHistory();
-        } else {
-            removeHistory();
-        }
-    });
+
 });
 
 
@@ -345,7 +349,11 @@ const template = [
     submenu: [
       { role: 'quit' },
       { type: 'separator'}, // Keeps Cmd+Q / Alt+F4 to quit, without Cmd+W window close
-      { label: 'History', accelerator: 'CmdOrCtrl+Y' },
+      { label: 'History', accelerator: 'CmdOrCtrl+Y', click: () => {if (!historyView) {
+            addHistory();
+        } else {
+            removeHistory();
+        }}},
       {label: 'Bookmarks', accelerator: 'CmdOrCtrl+B'}
     ]
   },
@@ -369,8 +377,11 @@ const template = [
   {
     label: 'Tab',
     submenu: [
-        { label: 'New Tab', accelerator: 'CmdOrCtrl+T'},
-        { label: 'Close Tab', accelerator: 'CmdOrCtrl+W'}
+        { label: 'New Tab', accelerator: 'CmdOrCtrl+T', click: () => {const win = BrowserWindow.getFocusedWindow();
+        if (win) {
+            win.webContents.send("new-tab", "https://google.com");
+        }n}},
+        { label: 'Close Tab', accelerator: 'CmdOrCtrl+W', click: closetab(activeTabIndex)}
     ]
   }
 ];
