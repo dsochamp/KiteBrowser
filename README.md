@@ -1,6 +1,6 @@
 # KiteBrowser
 
-![App Picture]([https://user-cdn.hackclub-assets.com/01a13f9c-baac-7c19-b0a0-d9960052f47b/Screenshot%202026-10-15%20at%204.37.15%E2%80%AFpm.png](https://user-cdn.hackclub-assets.com/01a2030c-cd17-7f87-8c2a-a138907da99a/Screenshot%202026-11-22%20at%203.38.06%E2%80%AFpm.png))
+![App Picture](https://user-cdn.hackclub-assets.com/01a2030c-cd17-7f87-8c2a-a138907da99a/Screenshot%202026-11-22%20at%203.38.06%E2%80%AFpm.png)
 
 ## TL:DR
 
