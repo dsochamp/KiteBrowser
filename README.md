@@ -8,7 +8,7 @@ KiteBrowser is a browser built using ```electronjs``` as a compiler. The app wor
 
 ## Installation
 
-When you install the ```.zip``` from the Github release you have to unzip the folder, then open a Terminal at the location of the folder and run this command: ```open "kitebrowser.app"```.
+You can install the app using the ```.dmg``` uploaded or unpackaged the ```.zip``` to directly open the ```.app``` file. Sometimes you require to set specific permissions if you are not directly installing the app. If you want, you can also install the project and in the project's terminal folder run ```npm start```.
 
 ## Tech-Stack
 
